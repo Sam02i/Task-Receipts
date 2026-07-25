@@ -211,7 +211,7 @@
     </script>
     <div class="top-bar">
         <div class="top-bar-left">
-            <a href="index1.html" class="pill-btn">← Back to app</a>
+            <a href="index.html" class="pill-btn">← Back to app</a>
             <button class="pill-btn" id="clearSessionBtn">End session</button>
             <button class="pill-btn reprint" id="reprintBtn">↻ Reprint Summary</button>
         </div>
@@ -580,7 +580,7 @@
             if (confirm('End this session? All data will be cleared.')) {
                 localStorage.removeItem('tr_tasks'); localStorage.removeItem('tr_breaks');
                 localStorage.removeItem(POSITIONS_KEY); localStorage.removeItem(SUMMARY_RENDERED_KEY);
-                window.location.href = 'index1.html';
+                window.location.href = 'index.html';
             }
         });
 
