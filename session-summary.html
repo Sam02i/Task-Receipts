@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Summary - Task Receipts</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Courier New', monospace; background: #ececea; color: #333; min-height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        .top-bar { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; background: #e4e4e0; border-bottom: 1px solid #d8d8d4; flex-shrink: 0; }
+        .top-bar-left { display: flex; align-items: center; gap: 12px; }
+        .top-bar-center { 
+    font-size: 13px; 
+    font-weight: 600; 
+    letter-spacing: 3px; 
+    text-transform: uppercase; 
+    color: #555;
+    position: relative;
+    left: -117px;
+}
+        .pill-btn { padding: 8px 18px; border: 1.5px solid #c8c8c4; background: #f0f0ec; border-radius: 20px; cursor: pointer; font-size: 12px; font-family: 'Courier New', monospace; color: #555; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 2px 2px 5px rgba(0,0,0,0.06), -2px -2px 5px rgba(255,255,255,0.7); }
+        .pill-btn:hover { background: #fff; border-color: #aaa; }
+        .pill-btn.primary { background: #fff; border-color: #bbb; }
+        .pill-btn.reprint { background: #fff; border-color: #bbb; }
+        .pill-btn.reprint:hover { background: #f5f5f0; }
+        .main-content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; position: relative; overflow: hidden; }
+        .tray-container { position: relative; width: 80vw; height: 95vh; display: flex; align-items: center; justify-content: center; animation: trayFadeIn 1.4s ease-out; }
+        @keyframes trayFadeIn { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
+        .tray-image { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; object-fit: contain; z-index: 1; filter: drop-shadow(0 20px 50px rgba(0,0,0,0.25)); }
+        .summary-printer-slot { position: absolute; top: 10%; left: 50%; transform: translateX(-50%); width: 220px; height: 18px; background: linear-gradient(180deg, #1a1a1a 0%, #2a2a2a 50%, #1a1a1a 100%); border-radius: 9px; z-index: 8; box-shadow: 0 3px 10px rgba(0,0,0,0.5), inset 0 1px 2px rgba(0,0,0,0.8); }
+        .summary-printer-slot::after { content: ''; position: absolute; top: 50%; left: 8%; right: 8%; height: 2px; background: #000; border-radius: 1px; transform: translateY(-50%); }
+        .receipts-stack { position: relative; z-index: 10; width: 420px; height: 520px; margin-top: 50px; }
+        
+        .summary-receipt { background: #fff; width: 175px; padding: 10px 12px 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); position: absolute; font-family: 'Courier New', monospace; cursor: grab; user-select: none; transition: transform 0.25s ease, box-shadow 0.25s ease; background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.015) 2px, rgba(0,0,0,0.015) 4px), repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(0,0,0,0.01) 3px, rgba(0,0,0,0.01) 6px); border-top: 3px dotted rgba(0,0,0,0.2); border-bottom: 3px dotted rgba(0,0,0,0.2); color: #333; }
+        .summary-receipt.is-summary-receipt { width: 210px; padding: 12px 14px 10px; z-index: 50; }
+
+        .summary-receipt:hover { box-shadow: 0 14px 32px rgba(0,0,0,0.2); }
+        .summary-receipt.expanded { transform: scale(1.10) !important; box-shadow: 0 20px 44px rgba(0,0,0,0.28); z-index: 100; }
+        .summary-receipt.dragging { cursor: grabbing; transition: none; z-index: 200; }
+        .summary-receipt.settled { animation: gentleFloatFront 4s ease-in-out infinite; }
+        
+        .summary-receipt.existing { animation: existingLand 0.6s ease-out both; }
+        @keyframes existingLand { 0% { opacity: 0; } 100% { opacity: 1; } }
+        
+        @keyframes gentleFloatFront { 0%, 100% { transform: rotate(var(--rot, 1.8deg)) translateY(0); } 50% { transform: rotate(var(--rot, 1.8deg)) translateY(-3px); } }
+        
+        .receipt-top-row { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 4px; }
+        .receipt-icon-small { width: 16px; height: 16px; flex-shrink: 0; stroke: #333; margin-top: 2px; }
+        .receipt-task-name { 
+            font-size: 11px; 
+            font-weight: 600; 
+            color: #222; 
+            letter-spacing: 0.3px; 
+            line-height: 1.3em;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-height: 3.9em;
+            word-break: break-word;
+        }
+        .receipt-date-row { font-size: 9px; color: #333; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; padding-left: 22px; }
+        .receipt-image-large { width: 100%; height: 100px; margin: 4px 0 6px; overflow: hidden; background: #f5f5f5; display: flex; align-items: center; justify-content: center; }
+        .receipt-image-large img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+        .receipt-dashed-sep { border-top: 2px dashed #bbb; margin: 4px 0; }
+        .receipt-timeline-row { display: flex; align-items: center; margin-bottom: 6px; padding: 0 2px; }
+        .receipt-time-block { width: 14px; height: 14px; background: #222; border-radius: 1px; flex-shrink: 0; }
+        .receipt-time-mid { font-size: 10px; color: #333; margin: 0 auto; letter-spacing: 0.5px; }
+        .receipt-time-right { font-size: 10px; color: #333; flex-shrink: 0; margin-left: auto; letter-spacing: 0.5px; }
+        .receipt-bottom-row { display: flex; justify-content: space-between; font-size: 9px; color: #444; letter-spacing: 0.5px; padding-top: 2px; }
+        
+        .summary-receipt.theme-white { background: #fff; }
+        .summary-receipt.theme-cream { background: #fdf6e3; }
+        .summary-receipt.theme-red { background: #c0392b; }
+        .summary-receipt.theme-red .receipt-task-name, .summary-receipt.theme-red .receipt-date-row, .summary-receipt.theme-red .receipt-time-mid, .summary-receipt.theme-red .receipt-time-right, .summary-receipt.theme-red .receipt-bottom-row { color: #fff; }
+        .summary-receipt.theme-red .receipt-icon-small { stroke: #fff; }
+        .summary-receipt.theme-red .receipt-time-block { background: #fff; }
+        .summary-receipt.theme-blue { background: #4682B4; }
+        .summary-receipt.theme-blue .receipt-task-name, .summary-receipt.theme-blue .receipt-date-row, .summary-receipt.theme-blue .receipt-time-mid, .summary-receipt.theme-blue .receipt-time-right, .summary-receipt.theme-blue .receipt-bottom-row { color: #fff; }
+        .summary-receipt.theme-blue .receipt-icon-small { stroke: #fff; }
+        .summary-receipt.theme-blue .receipt-time-block { background: #fff; }
+        .summary-receipt.theme-green { background: #C0CFB2; }
+        .summary-receipt.theme-pink { background: #FFAEFF; }
+
+        /* ── Ocean Tide: lock receipt text to dark navy — body color must NOT bleed in ── */
+        body[data-app-theme="seaside"] .summary-receipt { color: #14283a; }
+        body[data-app-theme="seaside"] .summary-receipt .receipt-task-name { color: #14283a; }
+        body[data-app-theme="seaside"] .summary-receipt .receipt-date-row { color: #1f3a4e; }
+        body[data-app-theme="seaside"] .summary-receipt .receipt-time-mid { color: #1f3a4e; }
+        body[data-app-theme="seaside"] .summary-receipt .receipt-time-right { color: #1f3a4e; }
+        body[data-app-theme="seaside"] .summary-receipt .receipt-bottom-row { color: #2b4a60; }
+        body[data-app-theme="seaside"] .summary-receipt .receipt-icon-small { stroke: #1f3a4e; }
+        body[data-app-theme="seaside"] .summary-receipt .receipt-time-block { background: #14283a; }
+        body[data-app-theme="seaside"] .summary-receipt .receipt-dashed-sep { border-color: #bbb; }
+        /* Restore coloured theme overrides on top (red/blue still get white text) */
+        body[data-app-theme="seaside"] .summary-receipt.theme-red .receipt-task-name,
+        body[data-app-theme="seaside"] .summary-receipt.theme-red .receipt-date-row,
+        body[data-app-theme="seaside"] .summary-receipt.theme-red .receipt-time-mid,
+        body[data-app-theme="seaside"] .summary-receipt.theme-red .receipt-time-right,
+        body[data-app-theme="seaside"] .summary-receipt.theme-red .receipt-bottom-row,
+        body[data-app-theme="seaside"] .summary-receipt.theme-blue .receipt-task-name,
+        body[data-app-theme="seaside"] .summary-receipt.theme-blue .receipt-date-row,
+        body[data-app-theme="seaside"] .summary-receipt.theme-blue .receipt-time-mid,
+        body[data-app-theme="seaside"] .summary-receipt.theme-blue .receipt-time-right,
+        body[data-app-theme="seaside"] .summary-receipt.theme-blue .receipt-bottom-row { color: #fff; }
+        body[data-app-theme="seaside"] .summary-receipt.theme-red .receipt-icon-small,
+        body[data-app-theme="seaside"] .summary-receipt.theme-blue .receipt-icon-small { stroke: #fff; }
+        body[data-app-theme="seaside"] .summary-receipt.theme-red .receipt-time-block,
+        body[data-app-theme="seaside"] .summary-receipt.theme-blue .receipt-time-block { background: #fff; }
+
+        /* EXPORT BUTTON */
+        .export-receipt-btn {
+            position: absolute;
+            bottom: -36px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            border: 1.5px solid #555;
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            z-index: 1001;
+            white-space: nowrap;
+            display: none;
+            transition: all 0.2s;
+        }
+        .export-receipt-btn:hover {
+            background: #111;
+            border-color: #777;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.35);
+        }
+        .summary-receipt.expanded .export-receipt-btn {
+            display: block !important;
+        }
+    </style>
+
+    <style>
+        #appWallpaper {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background-size: cover; background-position: center center; background-repeat: no-repeat;
+            opacity: 0;
+        }
+        #appWallpaperOverlay {
+            position: fixed; inset: 0; z-index: 1; pointer-events: none; background: transparent;
+        }
+        body[data-app-theme="seaside"] #appWallpaperOverlay {
+            background: linear-gradient(to right, rgba(4,16,22,0.50) 0%, rgba(4,16,22,0.18) 50%, rgba(4,16,22,0.0) 100%);
+        }
+        body[data-app-theme="seaside"] { background-color: #040e14; color: #e8f8fa; }
+        .top-bar, .main-content { position: relative; z-index: 2; }
+
+        /* ── Ocean Tide: Session Summary ── */
+        body[data-app-theme="seaside"] .top-bar {
+            background: rgba(4, 16, 22, 0.55);
+            border-bottom: 1px solid rgba(56, 200, 220, 0.14);
+            backdrop-filter: blur(22px) saturate(1.4);
+            -webkit-backdrop-filter: blur(22px) saturate(1.4);
+        }
+        body[data-app-theme="seaside"] .top-bar-center {
+            color: #38c8dc;
+            font-weight: 700;
+            letter-spacing: 3px;
+        }
+        body[data-app-theme="seaside"] .pill-btn {
+            background: rgba(5, 18, 24, 0.65);
+            border: 1px solid rgba(56, 200, 220, 0.24);
+            color: #c8eef4;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 14px rgba(0,140,170,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+            transition: all 0.18s ease;
+        }
+        body[data-app-theme="seaside"] .pill-btn:hover {
+            background: linear-gradient(135deg, rgba(20,80,96,0.82), rgba(8,48,62,0.90));
+            border-color: rgba(100, 220, 235, 0.48);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(0,180,210,0.22);
+            transform: translateY(-1px);
+        }
+        body[data-app-theme="seaside"] .pill-btn.primary,
+        body[data-app-theme="seaside"] .pill-btn.reprint {
+            background: linear-gradient(135deg, rgba(18,72,88,0.80), rgba(8,48,62,0.88));
+            border-color: rgba(56, 200, 220, 0.38);
+            color: #e8f8fa;
+        }
+        body[data-app-theme="seaside"] .tray-image {
+            filter: brightness(0.88) hue-rotate(162deg) saturate(0.78) contrast(1.04);
+        }
+    </style>
+</head>
+<body>
+    <div id="appWallpaper"></div>
+    <div id="appWallpaperOverlay"></div>
+    <script>
+        (function() {
+            var theme = localStorage.getItem('tr_app_theme') || 'classic';
+            document.body.setAttribute('data-app-theme', theme);
+            if (theme === 'seaside') {
+                var el = document.getElementById('appWallpaper');
+                if (el) { el.style.backgroundImage = "url('wallpaper.jpg')"; el.style.opacity = '1'; }
+            }
+        })();
+    </script>
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <a href="index1.html" class="pill-btn">← Back to app</a>
+            <button class="pill-btn" id="clearSessionBtn">End session</button>
+            <button class="pill-btn reprint" id="reprintBtn">↻ Reprint Summary</button>
+        </div>
+        <div class="top-bar-center">SESSION SUMMARY</div>
+        <a href="receipts-archive.html" class="pill-btn primary">See all receipts (<span id="receiptCount">0</span>) →</a>
+    </div>
+
+    <div class="main-content">
+        <div class="tray-container">
+            <img src="tray.png" alt="Tray" class="tray-image">
+            <div class="summary-printer-slot"></div>
+            <div class="receipts-stack" id="receiptsStack"></div>
+        </div>
+    </div>
+
+    <script>
+        const POSITIONS_KEY = 'tr_receipt_positions';
+        const SUMMARY_RENDERED_KEY = 'tr_summary_rendered';
+        let summaryReceiptEl = null;
+        let summaryReceiptId = 'session-summary';
+        let summaryReceiptRot = 1.8;
+        let printCount = 0;
+
+        function loadPositions() { try { return JSON.parse(localStorage.getItem(POSITIONS_KEY)) || {}; } catch { return {}; } }
+        function savePositions(positions) { localStorage.setItem(POSITIONS_KEY, JSON.stringify(positions)); }
+        function saveReceiptPosition(id, top, left, rot) { const p = loadPositions(); p[id] = { top, left, rot }; savePositions(p); }
+
+        // --- NEW SMOOTH PRINTER ANIMATION ---
+        function animateReceiptFeed(el, rot, isSummary = false) {
+            requestAnimationFrame(() => {
+                const area = document.getElementById('receiptsStack');
+                const areaRect = area.getBoundingClientRect();
+                const slotEl = document.querySelector('.summary-printer-slot');
+                
+                let slotCX = areaRect.width / 2;
+                let slotBottomY = 20;
+                if (slotEl) {
+                    const sr = slotEl.getBoundingClientRect();
+                    slotCX = sr.left + sr.width / 2 - areaRect.left;
+                    slotBottomY = sr.bottom - areaRect.top;
+                }
+
+                const elW = el.offsetWidth || (isSummary ? 210 : 175);
+                const elH = el.offsetHeight || 300;
+
+                // 1. START: Position receipt so it's fully hidden inside/above the slot
+                const startTop = slotBottomY - elH;
+                const startLeft = slotCX - elW / 2;
+
+                el.style.left = `${startLeft}px`;
+                el.style.top = `${startTop}px`;
+                el.style.transform = `rotate(0deg)`;
+                el.style.visibility = 'visible';
+                el.style.opacity = '1';
+                el.style.clipPath = `inset(100% 0 0 0)`; // Fully hidden by clipping the top
+                el.style.transition = 'none';
+                el.style.zIndex = 999;
+
+                void el.offsetWidth; // Force browser to apply initial state
+
+                // 2. FEED PHASE (1.5s): Move down and unclip simultaneously
+                el.style.transition = `top 1.5s cubic-bezier(0.4, 0, 0.2, 1), clip-path 1.5s cubic-bezier(0.4, 0, 0.2, 1)`;
+                el.style.top = `${startTop + elH}px`; // Moves down by its full height
+                el.style.clipPath = `inset(0 0 0 0)`; // Fully revealed
+
+                // 3. FALL PHASE (after 1.5s): Drop to landing spot
+                setTimeout(() => {
+                    if (el.classList.contains('dragging')) return;
+                    const landTop = slotBottomY + 40 + Math.random() * 80;
+                    const landLeft = slotCX - elW / 2 + (Math.random() - 0.5) * 60;
+
+                    el.style.transition = `top 0.8s cubic-bezier(0.5, 0, 1, 0.5), left 0.8s ease-out, transform 0.8s ease-in`;
+                    el.style.top = `${landTop}px`;
+                    el.style.left = `${landLeft}px`;
+                    el.style.transform = `rotate(${rot}deg)`;
+
+                    // 4. SETTLE: Lock position and enable floating
+                    setTimeout(() => {
+                        if (el.classList.contains('dragging')) return;
+                        el.style.transition = 'none';
+                        el.classList.remove('from-slot'); // Cleanup old class if it exists
+                        el.classList.add('settled');
+                        
+                        // Save final position
+                        if (el.id === 'session-summary' || el.id.startsWith('session-summary-print')) {
+                            saveReceiptPosition(el.id || summaryReceiptId, el.style.top, el.style.left, rot);
+                        }
+                    }, 800);
+                }, 1500);
+            });
+        }
+
+        // --- REPRINT BUTTON LOGIC ---
+        function triggerReprint() {
+            const stack = document.getElementById('receiptsStack');
+            printCount++;
+            const receiptId = `session-summary-print-${printCount}`;
+            const rot = 1.8 + (Math.random() - 0.5) * 4;
+            
+            const tasks = JSON.parse(localStorage.getItem('tr_tasks') || '[]');
+            const completedTasks = tasks.filter(t => t.status === 'completed');
+            const totalFocus = completedTasks.reduce((sum, t) => sum + (t.duration || 0), 0);
+            const firstTask = tasks.length > 0 ? new Date(tasks[0].id) : new Date();
+            const now = new Date();
+            const sessionLength = Math.floor((now - firstTask) / 1000);
+            const breaksTaken = parseInt(localStorage.getItem('tr_breaks') || '0');
+            const breakTime = breaksTaken * 30;
+            const onTaskPercent = sessionLength > 0 ? Math.min(100, Math.round((totalFocus / sessionLength) * 100)) : 100;
+
+            const stats = {
+                tasksDone: completedTasks.length, totalFocus: formatTime(totalFocus),
+                totalBreak: formatTime(breakTime), sessionLength: formatTime(sessionLength),
+                onTask: `${onTaskPercent}%`, date: now,
+                startStr: firstTask.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+                endStr: now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+            };
+
+            const el = createSessionSummaryReceipt(rot, stats);
+            el.id = receiptId; // Give it an ID for saving
+            stack.appendChild(el);
+            enableReceiptInteraction(el, receiptId);
+            
+            // Trigger the smooth animation
+            animateReceiptFeed(el, rot, true);
+        }
+
+        function loadSessionData() {
+            const tasks = JSON.parse(localStorage.getItem('tr_tasks') || '[]');
+            const completedTasks = tasks.filter(t => t.status === 'completed');
+            const totalFocus = completedTasks.reduce((sum, t) => sum + (t.duration || 0), 0);
+
+            const firstTask = tasks.length > 0 ? new Date(tasks[0].id) : new Date();
+            const now = new Date();
+            const sessionLength = Math.floor((now - firstTask) / 1000);
+            const breaksTaken = parseInt(localStorage.getItem('tr_breaks') || '0');
+            const breakTime = breaksTaken * 30;
+            const onTaskPercent = sessionLength > 0 ? Math.min(100, Math.round((totalFocus / sessionLength) * 100)) : 100;
+
+            document.getElementById('receiptCount').textContent = completedTasks.length;
+
+            const stack = document.getElementById('receiptsStack');
+            stack.innerHTML = '';
+
+            const positions = loadPositions();
+            const summaryAlreadyRendered = localStorage.getItem(SUMMARY_RENDERED_KEY) === 'true';
+
+            if (completedTasks.length > 0) {
+                const sorted = [...completedTasks].sort((a, b) => a.id - b.id);
+
+                // Render existing task receipts (no feed animation, just fade in)
+                sorted.forEach((task, index) => {
+                    const receiptId = `task-${task.id}`;
+                    const savedPos = positions[receiptId];
+                    const rot = savedPos ? savedPos.rot : (-6 + (index * 3));
+                    const top = savedPos ? savedPos.top : `${20 + index * 15}px`;
+                    const left = savedPos ? savedPos.left : `${10 + index * 10}px`;
+
+                    const receipt = createSummaryReceipt(task, rot);
+                    receipt.classList.add('existing');
+                    receipt.style.setProperty('--rot', `${rot}deg`);
+                    receipt.style.top = top;
+                    receipt.style.left = left;
+                    receipt.style.zIndex = index + 1;
+                    receipt.style.opacity = savedPos ? 1 : (0.7 + (index * 0.1));
+                    stack.appendChild(receipt);
+                    enableReceiptInteraction(receipt, receiptId);
+
+                    if (!savedPos) {
+                        setTimeout(() => {
+                            saveReceiptPosition(receiptId, window.getComputedStyle(receipt).top, window.getComputedStyle(receipt).left, rot);
+                        }, 700);
+                    }
+                });
+
+                // Create the main Session Summary receipt
+                const savedSummaryPos = positions[summaryReceiptId];
+                summaryReceiptRot = savedSummaryPos ? savedSummaryPos.rot : 1.8;
+                const stats = {
+                    tasksDone: completedTasks.length, totalFocus: formatTime(totalFocus),
+                    totalBreak: formatTime(breakTime), sessionLength: formatTime(sessionLength),
+                    onTask: `${onTaskPercent}%`, date: now,
+                    startStr: firstTask.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+                    endStr: now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+                };
+                
+                summaryReceiptEl = createSessionSummaryReceipt(summaryReceiptRot, stats);
+                summaryReceiptEl.id = summaryReceiptId;
+                stack.appendChild(summaryReceiptEl);
+                enableReceiptInteraction(summaryReceiptEl, summaryReceiptId);
+                
+                if (!summaryAlreadyRendered) {
+                    // First time opening: Animate it feeding out of the slot
+                    animateReceiptFeed(summaryReceiptEl, summaryReceiptRot, true);
+                    
+                    // Save position after animation finishes
+                    setTimeout(() => {
+                        const computedTop = window.getComputedStyle(summaryReceiptEl).top;
+                        const computedLeft = window.getComputedStyle(summaryReceiptEl).left;
+                        saveReceiptPosition(summaryReceiptId, computedTop, computedLeft, summaryReceiptRot);
+                        localStorage.setItem(SUMMARY_RENDERED_KEY, 'true');
+                    }, 2500);
+                } else {
+                    // Returning to page: Just place it at its saved position
+                    summaryReceiptEl.style.top = savedSummaryPos ? savedSummaryPos.top : '0px';
+                    summaryReceiptEl.style.left = savedSummaryPos ? savedSummaryPos.left : '0px';
+                    summaryReceiptEl.classList.add('settled');
+                }
+            } else {
+                // No tasks yet
+                const stats = { tasksDone: 0, totalFocus: '0s', totalBreak: '0s', sessionLength: '0s', onTask: '0%', date: now, startStr: '--:-- PM', endStr: '--:-- PM' };
+                summaryReceiptEl = createSessionSummaryReceipt(1.8, stats);
+                summaryReceiptEl.id = summaryReceiptId;
+                stack.appendChild(summaryReceiptEl);
+                enableReceiptInteraction(summaryReceiptEl, summaryReceiptId);
+
+                animateReceiptFeed(summaryReceiptEl, 1.8, true);
+                setTimeout(() => {
+                    saveReceiptPosition(summaryReceiptId, window.getComputedStyle(summaryReceiptEl).top, window.getComputedStyle(summaryReceiptEl).left, 1.8);
+                    localStorage.setItem(SUMMARY_RENDERED_KEY, 'true');
+                }, 2500);
+            }
+        }
+
+        function createSummaryReceipt(task, rot) {
+            const el = document.createElement('div');
+            el.className = `summary-receipt ${task.receiptTheme || 'theme-white'}`;
+            const dateStr = new Date(task.id).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+            const timeStr = new Date(task.id).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            const onTask = (task.duration || 0) > 0 ? '100%' : '0%';
+            el.innerHTML = `
+                <div class="receipt-top-row">
+                    <svg class="receipt-icon-small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="1"/><line x1="9" y1="6" x2="15" y2="6"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="13" y2="14"/></svg>
+                    <span class="receipt-task-name">${task.name}</span>
+                </div>
+                <div class="receipt-date-row">${dateStr}, ${timeStr}</div>
+                <div class="receipt-image-large"><img src="${task.receiptImage || ''}" alt="proof"></div>
+                <div class="receipt-dashed-sep"></div>
+                <div class="receipt-timeline-row">
+                    <div class="receipt-time-block"></div>
+                    <span class="receipt-time-mid">${timeStr}</span>
+                    <span class="receipt-time-right">${onTask} on task</span>
+                </div>
+                <div class="receipt-bottom-row">
+                    <span>${timeStr} Start ---></span>
+                    <span>1 square = 1 min${(task.duration || 0) !== 60 ? 's' : ''}</span>
+                </div>
+                <button class="export-receipt-btn" data-html2canvas-ignore="true" onclick="exportReceipt(event, this)">Export Scan</button>
+            `;
+            return el;
+        }
+
+        function generateFocusGraphMarkup() {
+            const tasks = JSON.parse(localStorage.getItem('tr_tasks') || '[]');
+            const completedTasks = tasks.filter(t => t.status === 'completed');
+            if (completedTasks.length === 0) {
+                return '<div style="text-align: center; color: #888;">No tasks completed</div>';
+            }
+
+            const maxDuration = Math.max(...completedTasks.map(t => t.duration || 0));
+            if (maxDuration === 0) {
+                return completedTasks.map(t => {
+                    const name = t.name.substring(0, 8).padEnd(8, ' ');
+                    return `<div style="display: flex; justify-content: space-between; font-family: monospace;"><span>${name} [░░░░░░░░]</span><span>0s</span></div>`;
+                }).join('');
+            }
+
+            const maxBarWidth = 8;
+
+            return completedTasks.map(t => {
+                const duration = t.duration || 0;
+                let name = t.name;
+                if (name.length > 8) {
+                    name = name.substring(0, 7) + '…';
+                }
+                const paddedName = name.padEnd(8, ' ').toUpperCase();
+                const fillWidth = Math.round((duration / maxDuration) * maxBarWidth);
+                const barStr = '█'.repeat(fillWidth) + '░'.repeat(maxBarWidth - fillWidth);
+
+                let durLabel = '';
+                if (duration < 60) {
+                    durLabel = `${duration}s`;
+                } else {
+                    durLabel = `${Math.round(duration / 60)}m`;
+                }
+
+                return `<div style="display: flex; justify-content: space-between; font-family: monospace; letter-spacing: 0.5px;"><span>${paddedName} [${barStr}]</span><span>${durLabel}</span></div>`;
+            }).join('');
+        }
+
+        function createSessionSummaryReceipt(rot, stats) {
+            const el = document.createElement('div');
+            el.className = 'summary-receipt theme-white is-summary-receipt';
+            const dateStr = stats.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
+            const timeStr = stats.date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            el.innerHTML = `
+                <div class="receipt-top-row">
+                    <svg class="receipt-icon-small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="1"/><line x1="9" y1="6" x2="15" y2="6"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="13" y2="14"/></svg>
+                    <span class="receipt-task-name">SESSION SUMMARY</span>
+                </div>
+                <div class="receipt-date-row">${dateStr}, ${timeStr}</div>
+                <div class="receipt-dashed-sep"></div>
+                <div class="receipt-timeline-row" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+                    <div style="display: flex; justify-content: space-between; width: 100%; font-size: 10px;"><span>Tasks done</span><span>${stats.tasksDone}</span></div>
+                    <div style="display: flex; justify-content: space-between; width: 100%; font-size: 10px;"><span>Total focus</span><span>${stats.totalFocus}</span></div>
+                    <div style="display: flex; justify-content: space-between; width: 100%; font-size: 10px;"><span>Total break</span><span>${stats.totalBreak}</span></div>
+                    <div style="display: flex; justify-content: space-between; width: 100%; font-size: 10px;"><span>Session length</span><span>${stats.sessionLength}</span></div>
+                    <div style="display: flex; justify-content: space-between; width: 100%; font-size: 10px;"><span>On task</span><span>${stats.onTask}</span></div>
+                </div>
+                
+                <div class="receipt-dashed-sep"></div>
+                <div class="focus-summary-graph" style="font-size: 9px; line-height: 1.4; font-family: 'Courier New', monospace; width: 100%; margin: 6px 0;">
+                    <div style="font-weight: bold; text-align: center; margin-bottom: 6px; letter-spacing: 1px;">FOCUS SUMMARY</div>
+                    ${generateFocusGraphMarkup()}
+                </div>
+
+                <div class="receipt-dashed-sep"></div>
+                <div class="receipt-bottom-row">
+                    <span>${stats.startStr} Start ---></span>
+                    <span>${stats.endStr}</span>
+                </div>
+                <button class="export-receipt-btn" data-html2canvas-ignore="true" onclick="exportReceipt(event, this)">Export Scan</button>
+            `;
+            return el;
+        }
+
+        function enableReceiptInteraction(el, receiptId) {
+            let dragState = { active: false, moved: false, sx: 0, sy: 0, ix: 0, iy: 0 };
+            let isExpanded = false;
+
+            const onDown = (e) => {
+                e.preventDefault();
+                dragState.active = true; dragState.moved = false;
+                dragState.sx = e.touches ? e.touches[0].clientX : e.clientX;
+                dragState.sy = e.touches ? e.touches[0].clientY : e.clientY;
+                dragState.ix = el.offsetLeft; dragState.iy = el.offsetTop;
+                el.classList.add('dragging'); el.classList.remove('expanded', 'settled'); isExpanded = false;
+            };
+            const onMove = (e) => {
+                if (!dragState.active) return;
+                const cx = e.touches ? e.touches[0].clientX : e.clientX;
+                const cy = e.touches ? e.touches[0].clientY : e.clientY;
+                if (Math.abs(cx - dragState.sx) > 4 || Math.abs(cy - dragState.sy) > 4) dragState.moved = true;
+                if (dragState.moved) { el.style.left = `${dragState.ix + (cx - dragState.sx)}px`; el.style.top = `${dragState.iy + (cy - dragState.sy)}px`; el.style.transform = 'rotate(0deg)'; }
+            };
+            const onUp = () => {
+                if (!dragState.active) return; dragState.active = false;
+                el.classList.remove('dragging'); el.classList.add('settled');
+                if (receiptId && dragState.moved) saveReceiptPosition(receiptId, el.style.top, el.style.left, parseFloat(el.style.getPropertyValue('--rot')) || 0);
+            };
+            const onClick = () => {
+                if (dragState.moved) { dragState.moved = false; return; }
+                document.querySelectorAll('.summary-receipt.expanded').forEach(o => { if (o !== el) o.classList.remove('expanded'); });
+                isExpanded = !isExpanded; el.classList.toggle('expanded', isExpanded);
+            };
+            const onDocClick = (e) => { if (!el.contains(e.target) && isExpanded) { isExpanded = false; el.classList.remove('expanded'); } };
+
+            el.addEventListener('mousedown', onDown); el.addEventListener('touchstart', onDown, {passive: false});
+            document.addEventListener('mousemove', onMove); document.addEventListener('touchmove', onMove, {passive: false});
+            document.addEventListener('mouseup', onUp); document.addEventListener('touchend', onUp);
+            el.addEventListener('click', onClick); document.addEventListener('click', onDocClick);
+        }
+
+        function formatTime(seconds) { if (seconds < 60) return `${seconds}s`; return `${Math.floor(seconds/60)}m ${seconds%60}s`; }
+
+        document.getElementById('clearSessionBtn').addEventListener('click', () => {
+            if (confirm('End this session? All data will be cleared.')) {
+                localStorage.removeItem('tr_tasks'); localStorage.removeItem('tr_breaks');
+                localStorage.removeItem(POSITIONS_KEY); localStorage.removeItem(SUMMARY_RENDERED_KEY);
+                window.location.href = 'index1.html';
+            }
+        });
+
+        function exportReceipt(event, btn) {
+            event.stopPropagation();
+            const receiptEl = btn.closest('.summary-receipt');
+            if (!receiptEl) return;
+
+            const container = document.createElement('div');
+            container.style.position = 'fixed';
+            container.style.top = '-9999px';
+            container.style.left = '-9999px';
+            container.style.width = '800px';
+            container.style.height = '600px';
+            container.style.display = 'flex';
+            container.style.alignItems = 'center';
+            container.style.justifyContent = 'center';
+            container.style.overflow = 'hidden';
+            container.style.background = 'radial-gradient(circle, #2d1a10 0%, #150b06 100%)';
+            
+            const vignette = document.createElement('div');
+            vignette.style.position = 'absolute';
+            vignette.style.top = '0';
+            vignette.style.left = '0';
+            vignette.style.width = '100%';
+            vignette.style.height = '100%';
+            vignette.style.background = 'radial-gradient(ellipse at center, rgba(0,0,0,0) 30%, rgba(0,0,0,0.65) 100%)';
+            vignette.style.pointerEvents = 'none';
+            vignette.style.zIndex = '5';
+            container.appendChild(vignette);
+
+            const clone = receiptEl.cloneNode(true);
+            clone.classList.remove('expanded', 'settled', 'dragging');
+            clone.style.position = 'relative';
+            clone.style.top = '0';
+            clone.style.left = '0';
+            const angle = -3 - Math.random() * 2;
+            clone.style.transform = `rotate(${angle}deg)`;
+            clone.style.boxShadow = '12px 16px 28px rgba(0,0,0,0.5)';
+            clone.style.zIndex = '2';
+            clone.style.visibility = 'visible';
+            clone.style.opacity = '1';
+            clone.style.clipPath = 'none';
+            
+            container.appendChild(clone);
+            document.body.appendChild(container);
+
+            html2canvas(container, {
+                width: 800,
+                height: 600,
+                scale: 2,
+                useCORS: true,
+                allowTaint: true
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `receipt-${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                container.remove();
+            }).catch(err => {
+                console.error('Export failed:', err);
+                alert('Could not export receipt.');
+                container.remove();
+            });
+        }
+        window.exportReceipt = exportReceipt;
+
+        document.getElementById('reprintBtn').addEventListener('click', triggerReprint);
+        document.addEventListener('DOMContentLoaded', loadSessionData);
+    </script>
+</body>
+</html>

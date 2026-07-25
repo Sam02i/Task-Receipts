@@ -1,0 +1,1381 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Courier New', monospace; background: #f0f0ec; color: #333; height: 100vh; overflow: hidden; }
+
+header { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; border-bottom: 2px solid #d8d8d4; padding: 16px 32px; background: #e4e4e0; position: relative; z-index: 10; }
+.container { max-width: 1400px; margin: 0 auto; padding: 0 32px 24px; height: calc(100vh - 57px); display: flex; flex-direction: column; }
+.logo { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; border: 2px solid #333; padding: 8px 14px; background: #fff; }
+.creator { font-size: 11px; color: #999; letter-spacing: 1px; }
+
+.main-content { display: flex; flex: 1; gap: 30px; overflow: hidden; margin-top: 24px; }
+
+/* LEFT PANEL */
+.left-panel { width: 400px; flex-shrink: 0; overflow-y: auto; padding-left: 12px; }
+
+.flip-clock { margin-bottom: 20px; margin-top: 16px; display: flex; justify-content: center; }
+.clock-enclosure {
+    background: linear-gradient(145deg, #d8d8d0, #c4c4bc);
+    border-radius: 18px;
+    padding: 14px 18px 10px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.1), inset 0 1px 2px rgba(255,255,255,0.4), inset 0 -1px 2px rgba(0,0,0,0.1);
+    border: 2px solid #b8b8b0;
+    width: 100%;
+}
+.clock-top-bar { text-align: center; margin-bottom: 8px; }
+.clock-label { font-size: 10px; color: #666; letter-spacing: 1px; }
+.clock-display {
+    background: #1a1a1a;
+    border-radius: 10px;
+    padding: 16px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    box-shadow: inset 0 3px 8px rgba(0,0,0,0.6), inset 0 -1px 2px rgba(255,255,255,0.05);
+    border: 1px solid #0a0a0a;
+    margin-bottom: 8px;
+}
+.flip-digit {
+    background: linear-gradient(180deg, #2a2a2a 0%, #1e1e1e 50%, #2a2a2a 50%, #222 100%);
+    color: #f5f0e0;
+    font-size: 52px;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    width: 48px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    position: relative;
+    text-shadow: 0 0 8px rgba(245, 240, 224, 0.3);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.05);
+    border: 1px solid #0a0a0a;
+}
+.flip-digit::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; top: 50%;
+    height: 1px;
+    background: rgba(0,0,0,0.6);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.05);
+}
+.flip-colon {
+    color: #f5f0e0;
+    font-size: 44px;
+    font-weight: 700;
+    margin: 0 2px;
+    text-shadow: 0 0 8px rgba(245, 240, 224, 0.3);
+    animation: blink 1s infinite;
+}
+@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0.3; } }
+.clock-bottom-bar { text-align: right; }
+.breaks-count { font-size: 10px; color: #888; }
+
+.timer-controls { display: flex; gap: 8px; margin-bottom: 24px; }
+.control-btn { flex: 1; height: 46px; border: none; border-radius: 12px; background: linear-gradient(145deg, #f0f0e8, #e4e4dc); cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 3px 3px 6px #d0d0c8, -3px -3px 6px #f8f8f0; color: #888; transition: all 0.15s; }
+.control-btn:hover:not(:disabled) { transform: translateY(-1px); color: #555; }
+.control-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.task-section { margin-top: 16px; }
+.task-header { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    margin-bottom: 12px; 
+    padding-left: 15px; 
+    padding-top: 5px; /* Pushes "TASK LIST" text down slightly */
+}
+
+.task-header span { font-size: 13px; letter-spacing: 2px; color: #555; font-weight: 600; }
+.add-task-btn { width: 22px; height: 22px; border: none; background: transparent; font-size: 18px; color: #888; cursor: pointer; }
+.task-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+.tab { padding: 5px 16px; border: 2px solid #d8d8d0; background: #f0f0e8; border-radius: 16px; cursor: pointer; font-size: 10px; color: #999; font-family: inherit; }
+.tab.active { background: #fff; color: #333; border-color: #c8c8c0; }
+.task-input-container { display: flex; gap: 8px; margin-bottom: 14px; align-items: center; background: #fff; border-radius: 12px; padding: 4px; box-shadow: 2px 2px 6px rgba(0,0,0,0.05); border: 1px solid #e8e8e0; }
+#taskInput { flex: 1; padding: 10px 14px; border: none; font-size: 12px; font-family: inherit; background: transparent; outline: none; }
+.add-btn { padding: 10px 18px; border: none; background: transparent; color: #666; border-radius: 8px; cursor: pointer; font-size: 10px; font-weight: 600; font-family: inherit; }
+.add-btn:hover { background: #f5f5f0; }
+.task-list { min-height: 120px; }
+.no-tasks { 
+    color: #bbb; 
+    font-size: 12px; 
+    padding: 22px 0 16px 25px; /* Pushes "No tasks yet..." down and keeps it aligned */
+}
+
+
+.task-item { 
+    background: #fff; 
+    border: 1px solid #e8e8e0; 
+    border-radius: 10px; 
+    /* top: 16px (increased from 10px), right: 14px, bottom: 10px, left: 25px */
+    padding: 16px 14px 10px 25px; 
+    margin-bottom: 8px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    font-size: 12px; 
+}
+#taskInput { 
+    flex: 1; 
+    padding: 14px 14px 10px 14px; /* Pushes the typing text down slightly */
+    border: none; 
+    font-size: 12px; 
+    font-family: inherit; 
+    background: transparent; 
+    outline: none; 
+}
+.task-item.active { border-color: #333; }
+.task-item.completed { opacity: 0.5; }
+.task-btn { padding: 4px 12px; border: 1px solid #e0e0d8; background: #f5f5f0; border-radius: 6px; cursor: pointer; font-size: 10px; font-family: inherit; }
+.task-btn.primary { background: #333; color: #fff; border-color: #333; }
+
+/* RIGHT PANEL */
+.right-panel { flex: 1; position: relative; overflow: hidden; }
+.scene { position: relative; width: 100%; height: 100%; }
+
+/* TRAY: Moved slightly more RIGHT */
+.tray-image {
+    position: absolute;
+    bottom: -5vh;
+    right: calc(2vw - 70px); /* Changed from -40px to -60px to shift right */
+    width: 60vw;
+    height: auto;
+    max-height: 110vh;
+    object-fit: contain;
+    object-position: center bottom;
+    z-index: 1;
+    filter: drop-shadow(-8px 8px 24px rgba(0,0,0,0.18));
+}
+
+/* SLOT: Moved slightly LEFT */
+.printer-slot {
+    position: absolute;
+    top: 30%;
+    right: calc(27% + 28px);
+    width: 200px;
+    height: 16px;
+    background: linear-gradient(180deg, #1a1a1a 0%, #2a2a2a 50%, #1a1a1a 100%);
+    border-radius: 8px;
+    z-index: 8;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.5), inset 0 1px 2px rgba(0,0,0,0.8), inset 0 -1px 1px rgba(255,255,255,0.1);
+}
+.printer-slot::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 8%;
+    right: 8%;
+    height: 2px;
+    background: #000;
+    border-radius: 1px;
+    transform: translateY(-50%);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,1);
+}
+
+.camera-wrapper {
+    position: absolute;
+    top: 3%;
+    right: 20%;
+    z-index: 10;
+}
+.camera-image {
+    width: 390px;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 10px 24px rgba(0,0,0,0.35));
+}
+/* Camera Screen - Now visible to show receipt preview */
+.camera-screen {
+    position: absolute;
+    top: 35%;
+    left: 27%;
+    width: 117px;
+    height: 90px;
+    background: #1a1a1a;
+    border: 2px solid #000;
+    border-radius: 4px;
+    overflow: hidden;
+    z-index: 5;
+    display: block;
+}
+.receipts-area {
+    position: absolute;
+    top: 25%;
+    right: 3%;
+    width: 50%;
+    height: 70%;
+    z-index: 30;
+    pointer-events: none;
+}
+
+.receipt {
+    position: absolute;
+    background: #fff;
+    width: 175px;
+    padding: 10px 12px 8px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+    cursor: grab;
+    pointer-events: auto;
+    user-select: none;
+    /* No base transition — animation phases manage their own transitions */
+    background-image: 
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.015) 2px, rgba(0,0,0,0.015) 4px),
+        repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(0,0,0,0.01) 3px, rgba(0,0,0,0.01) 6px);
+    border-top: 3px dotted rgba(0,0,0,0.2);
+    border-bottom: 3px dotted rgba(0,0,0,0.2);
+    font-family: 'Courier New', monospace;
+}
+
+.receipt:hover {
+    transform: translate(-50%, -50%) rotate(var(--rot)) scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
+
+.receipt.expanded {
+    transform: translate(-50%, -50%) rotate(var(--rot)) scale(1.10) !important;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+    z-index: 500;
+}
+
+@keyframes subtleFloat {
+    0%, 100% { transform: translate(-50%, 0) rotate(var(--rot)) translateY(0); }
+    50% { transform: translate(-50%, 0) rotate(var(--rot)) translateY(-2px); }
+}
+.receipt.settled {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    animation: subtleFloat 3.5s ease-in-out infinite;
+}
+
+.receipt.dragging { 
+    cursor: grabbing; 
+    z-index: 1000 !important; 
+    box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+    animation: none;
+    transition: none;
+}
+
+/* printReceipt keyframe removed — animation is now fully JS-driven */
+
+.receipt-top-row { 
+    display: flex; 
+    align-items: flex-start; 
+    gap: 6px; 
+    margin-bottom: 4px; 
+}
+.receipt-icon-small { 
+    width: 16px; 
+    height: 16px; 
+    flex-shrink: 0; 
+    stroke: #333; 
+    margin-top: 2px; 
+}
+
+.receipt-task-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: #222;
+    letter-spacing: 0.3px;
+    line-height: 1.3em;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 3.9em;
+    word-break: break-word;
+}
+
+.receipt-date-row { 
+    font-size: 9px; 
+    color: #666; 
+    letter-spacing: 0.5px; 
+    text-transform: uppercase; 
+    margin-bottom: 6px; 
+    padding-left: 22px; 
+}
+
+.receipt-image-large { 
+    width: 100%; 
+    height: 100px; 
+    margin: 4px 0 6px; 
+    overflow: hidden; 
+    background: #fff; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+}
+.receipt-image-large img { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: contain; 
+    image-rendering: pixelated;
+}
+
+.receipt-dashed-sep { border-top: 2px dashed #bbb; margin: 4px 0; }
+.receipt-timeline-row { display: flex; align-items: center; margin-bottom: 6px; padding: 0 2px; }
+.receipt-time-block { width: 14px; height: 14px; background: #222; border-radius: 1px; flex-shrink: 0; }
+.receipt-time-mid { font-size: 10px; color: #555; margin: 0 auto; letter-spacing: 0.5px; }
+.receipt-time-right { font-size: 10px; color: #555; flex-shrink: 0; margin-left: auto; letter-spacing: 0.5px; }
+.receipt-bottom-row { display: flex; justify-content: space-between; font-size: 9px; color: #777; letter-spacing: 0.5px; padding-top: 2px; }
+
+.receipt.theme-white { background: #fff; color: #333; }
+.receipt.theme-cream { background: #fdf6e3; }
+.receipt.theme-red { background: #c0392b; }
+.receipt.theme-red .receipt-task-name, .receipt.theme-red .receipt-date-row, .receipt.theme-red .receipt-time-mid, .receipt.theme-red .receipt-time-right, .receipt.theme-red .receipt-bottom-row { color: #fff; }
+.receipt.theme-red .receipt-icon-small { stroke: #fff; }
+.receipt.theme-red .receipt-time-block { background: #fff; }
+.receipt.theme-blue { background: #4682B4; }
+.receipt.theme-blue .receipt-task-name, .receipt.theme-blue .receipt-date-row, .receipt.theme-blue .receipt-time-mid, .receipt.theme-blue .receipt-time-right, .receipt.theme-blue .receipt-bottom-row { color: #fff; }
+.receipt.theme-blue .receipt-icon-small { stroke: #fff; }
+.receipt.theme-blue .receipt-time-block { background: #fff; }
+.receipt.theme-green { background: #C0CFB2; }
+.receipt.theme-pink { background: #FFAEFF; }
+
+.end-session-btn {
+    padding: 8px 20px;
+    border: 2px solid #d8d8d4;
+    background: linear-gradient(145deg, #f0f0ec, #e8e8e4);
+    border-radius: 16px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+    color: #555;
+    box-shadow: 3px 3px 8px rgba(0,0,0,0.1), -3px -3px 8px rgba(255,255,255,0.8);
+    transition: all 0.2s;
+    margin-right: 16px;
+}
+.end-session-btn:hover { transform: translateY(-2px); box-shadow: 5px 5px 12px rgba(0,0,0,0.15), -5px -5px 12px rgba(255,255,255,0.9); color: #333; }
+.header-actions { display: flex; align-items: center; }
+
+.session-summary-btn {
+    position: absolute;
+    bottom: 4%;
+    right: 27%;
+    z-index: 20;
+    padding: 14px 48px;
+    border: 2px solid #d8d8d4;
+    background: linear-gradient(145deg, #f0f0ec, #e8e8e4);
+    border-radius: 24px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+    color: #555;
+    box-shadow: 4px 4px 10px rgba(0,0,0,0.1), -4px -4px 10px rgba(255,255,255,0.8);
+    transition: all 0.2s;
+}
+.session-summary-btn:hover { transform: translateY(-2px); box-shadow: 6px 6px 14px rgba(0,0,0,0.15), -6px -6px 14px rgba(255,255,255,0.9); color: #333; }
+
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+.modal { background: linear-gradient(145deg, #f0f0ec, #e8e8e4); border-radius: 22px; padding: 18px; width: 480px; max-width: 90vw; box-shadow: 0 20px 60px rgba(0,0,0,0.3); border: 2px solid #d8d8d4; position: relative; }
+.modal-close { position: absolute; top: 8px; right: 10px; width: 26px; height: 26px; border-radius: 50%; border: 2px solid #ccc; background: #fff; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.modal-screen { width: 100%; height: 260px; background: #000; border-radius: 10px; overflow: hidden; margin-bottom: 14px; border: 2px solid #ccc; }
+#modalVideo, #modalDrawCanvas { width: 100%; height: 100%; object-fit: cover; }
+.theme-selector { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; padding: 8px 12px; background: #e8e8e4; border-radius: 12px; flex-wrap: wrap; }
+.theme-label { font-size: 10px; color: #666; margin-right: 4px; }
+.theme-btn { padding: 4px 10px; border: 2px solid #d0d0cc; background: #fff; border-radius: 8px; cursor: pointer; font-size: 9px; font-family: inherit; color: #555; transition: all 0.15s; }
+.theme-btn.active { background: #333; color: #fff; border-color: #333; }
+.drawing-tools { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding: 8px 12px; background: #e8e8e4; border-radius: 12px; flex-wrap: wrap; }
+.color-picker, .brush-sizes { display: flex; align-items: center; gap: 4px; }
+.tool-label { font-size: 10px; color: #666; margin-right: 4px; }
+.color-btn { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #ccc; cursor: pointer; transition: transform 0.15s; }
+.color-btn.active { transform: scale(1.2); border-color: #333; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #333; }
+.brush-btn { width: 28px; height: 28px; border: 2px solid #d0d0cc; background: #fff; border-radius: 6px; cursor: pointer; font-size: 10px; font-family: inherit; color: #555; }
+.brush-btn.active { background: #333; color: #fff; border-color: #333; }
+.modal-controls { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.mode-toggle { display: flex; gap: 0; background: #e0e0dc; border-radius: 14px; padding: 3px; border: 1px solid #d0d0cc; }
+.mode-btn { padding: 5px 14px; border: none; background: transparent; border-radius: 10px; cursor: pointer; font-size: 10px; font-family: inherit; color: #666; }
+.mode-btn.active { background: #fff; color: #333; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.capture-btn { width: 44px; height: 44px; border-radius: 50%; border: 3px solid #d0d0cc; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.shutter-inner { width: 28px; height: 28px; border-radius: 50%; background: #e03131; border: 2px solid #c92a2a; }
+.signoff-btn { padding: 9px 22px; border: 2px solid #d0d0cc; background: #fff; border-radius: 14px; cursor: pointer; font-size: 12px; font-family: inherit; letter-spacing: 1px; }
+@keyframes flash { 0% { opacity: 1; } 100% { opacity: 0; } }
+.flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 99999; pointer-events: none; animation: flash 0.2s ease-out forwards; }
+
+/* EXPORT BUTTON */
+.export-receipt-btn {
+    position: absolute;
+    bottom: -36px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    border: 1.5px solid #555;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    z-index: 1001;
+    white-space: nowrap;
+    display: none;
+    transition: all 0.2s;
+}
+.export-receipt-btn:hover {
+    background: #111;
+    border-color: #777;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.35);
+}
+.receipt.expanded .export-receipt-btn,
+.summary-receipt.expanded .export-receipt-btn {
+    display: block !important;
+}
+
+/* DITHER FILTER SELECTOR */
+.dither-selector {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: #e8e8e4;
+    border-radius: 12px;
+    flex-wrap: wrap;
+}
+.dither-btn {
+    padding: 4px 10px;
+    border: 2px solid #d0d0cc;
+    background: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 9px;
+    font-family: inherit;
+    color: #555;
+    transition: all 0.15s;
+}
+.dither-btn.active { background: #333; color: #fff; border-color: #333; }
+
+/* ═══════════════════════════════════════════════════════════════════
+THEME ENGINE — Phase 1
+CSS custom properties per theme. Applied via data-app-theme on <body>.
+These vars are consumed in Phase 3/4. Phase 1 only establishes them.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Classic Retro (default — matches existing look exactly) ── */
+[data-app-theme="classic"],
+:root {
+    --theme-bg:            #f0f0ec;
+    --theme-panel-bg:      #fff;
+    --theme-panel-border:  #e8e8e0;
+    --theme-header-bg:     #fff;
+    --theme-header-border: #333;
+    --theme-clock-shell:   linear-gradient(145deg, #d8d8d0, #c4c4bc);
+    --theme-clock-border:  #b8b8b0;
+    --theme-btn-bg:        linear-gradient(145deg, #f0f0e8, #e4e4dc);
+    --theme-btn-shadow-a:  #d0d0c8;
+    --theme-btn-shadow-b:  #f8f8f0;
+    --theme-accent:        #333;
+    --theme-accent-text:   #fff;
+    --theme-tab-active-bg: #fff;
+    --theme-tab-active-cl: #333;
+    --theme-tab-bg:        #f0f0e8;
+    --theme-tab-cl:        #999;
+    --theme-label:         #555;
+    --theme-sub:           #888;
+    --theme-session-btn:   linear-gradient(145deg, #f0f0ec, #e8e8e4);
+    --theme-modal-bg:      linear-gradient(145deg, #f0f0ec, #e8e8e4);
+    --theme-wallpaper:     none;
+    --theme-wallpaper-op:  0;
+}
+
+/* ── Seaside Railway ── */
+[data-app-theme="seaside"] {
+    --theme-bg:            #0d1f2d;
+    --theme-panel-bg:      rgba(13, 31, 45, 0.82);
+    --theme-panel-border:  rgba(100, 200, 210, 0.25);
+    --theme-header-bg:     rgba(13, 31, 45, 0.9);
+    --theme-header-border: rgba(100, 200, 210, 0.5);
+    --theme-clock-shell:   linear-gradient(145deg, #1a3a4a, #0d2233);
+    --theme-clock-border:  rgba(100, 200, 210, 0.4);
+    --theme-btn-bg:        linear-gradient(145deg, #1a3a4a, #122838);
+    --theme-btn-shadow-a:  rgba(0,0,0,0.5);
+    --theme-btn-shadow-b:  rgba(100, 200, 210, 0.15);
+    --theme-accent:        #4ec9d8;
+    --theme-accent-text:   #fff;
+    --theme-tab-active-bg: rgba(100, 200, 210, 0.2);
+    --theme-tab-active-cl: #8ee0eb;
+    --theme-tab-bg:        rgba(13, 31, 45, 0.5);
+    --theme-tab-cl:        rgba(100, 200, 210, 0.5);
+    --theme-label:         #8ee0eb;
+    --theme-sub:           rgba(100, 200, 210, 0.6);
+    --theme-session-btn:   linear-gradient(145deg, #1a3a4a, #122838);
+    --theme-modal-bg:      linear-gradient(145deg, #1a3a4a, #0d2233);
+    --theme-wallpaper:     none;
+    --theme-wallpaper-op:  0.15;
+}
+
+/* ── App wallpaper layer ── */
+#appWallpaper {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    opacity: 0;
+}
+#appWallpaperOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: transparent;
+}
+[data-app-theme="seaside"] #appWallpaperOverlay {
+    background: linear-gradient(
+        to right,
+        rgba(13, 31, 45, 0.45) 0%,
+        rgba(13, 31, 45, 0.15) 50%,
+        rgba(13, 31, 45, 0.0) 100%
+    );
+}
+/* Body bg matches theme so no white gap shows while image loads */
+[data-app-theme="seaside"] { background-color: #0d1f2d; }
+
+.container { position: relative; z-index: 2; }
+
+/* ── Mute toggle button ── */
+.mute-toggle {
+    width: 32px;
+    height: 32px;
+    border: 2px solid #d8d8d4;
+    background: linear-gradient(145deg, #f0f0ec, #e8e8e4);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1), -2px -2px 5px rgba(255,255,255,0.8);
+    transition: all 0.2s;
+    margin-right: 10px;
+    color: #666;
+    flex-shrink: 0;
+}
+.mute-toggle:hover { transform: translateY(-1px); color: #333; }
+.mute-toggle.muted { color: #ccc; }
+
+/* ── Settings cog button ── */
+.settings-btn {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 40px;
+    height: 40px;
+    border: 2px solid #d8d8d4;
+    background: linear-gradient(145deg, #f0f0ec, #e8e8e4);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 3px 3px 8px rgba(0,0,0,0.12), -3px -3px 8px rgba(255,255,255,0.9);
+    z-index: 8000;
+    transition: all 0.2s;
+    color: #666;
+}
+.settings-btn:hover { transform: translateY(-2px) rotate(30deg); color: #333; }
+
+/* ── Settings panel ── */
+.settings-panel {
+    position: fixed;
+    bottom: 72px;
+    left: 20px;
+    width: 230px;
+    background: linear-gradient(145deg, #f0f0ec, #e8e8e4);
+    border: 2px solid #d8d8d4;
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 6px 6px 20px rgba(0,0,0,0.15), -4px -4px 12px rgba(255,255,255,0.9);
+    z-index: 7999;
+    display: none;
+    font-family: 'Courier New', monospace;
+}
+.settings-panel.open { display: block; }
+
+.settings-panel-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #555;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    text-align: center;
+}
+
+.settings-section-label {
+    font-size: 9px;
+    color: #999;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    margin-top: 12px;
+}
+.settings-section-label:first-of-type { margin-top: 0; }
+
+.app-theme-btn {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid #d0d0cc;
+    background: #fff;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 10px;
+    font-family: 'Courier New', monospace;
+    color: #555;
+    text-align: left;
+    margin-bottom: 6px;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+}
+.app-theme-btn:hover { border-color: #aaa; background: #f8f8f4; }
+.app-theme-btn.active { background: #333; color: #fff; border-color: #333; }
+.app-theme-btn .theme-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+OCEAN TIDE — Modern Trendy Edition
+Premium glassmorphism, gradient accents, sharp typography.
+Scoped 100% to [data-app-theme="seaside"].
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Typography base ── */
+[data-app-theme="seaside"] {
+    font-family: 'Courier New', monospace;
+    color: #e8f8fa;
+}
+
+/* ── Header ── */
+[data-app-theme="seaside"] header {
+    background: rgba(4, 18, 22, 0.55);
+    border-bottom: 1px solid rgba(56, 200, 220, 0.15);
+    box-shadow: 0 1px 0 rgba(56, 200, 220, 0.08), 0 4px 30px rgba(0, 12, 18, 0.5);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    padding: 16px 32px !important;
+}
+
+[data-app-theme="seaside"] .logo {
+    background: rgba(6, 24, 30, 0.60);
+    border: 1px solid rgba(56, 200, 220, 0.22);
+    color: #fff;
+    letter-spacing: 1px;
+    box-shadow: 0 2px 16px rgba(0, 180, 200, 0.10), inset 0 1px 0 rgba(255,255,255,0.06);
+    border-radius: 10px;
+}
+
+[data-app-theme="seaside"] .logo svg { stroke: #4aa8ba; }
+[data-app-theme="seaside"] .logo span { color: #fff; font-weight: 700; letter-spacing: 2.5px; }
+
+[data-app-theme="seaside"] .end-session-btn {
+    background: linear-gradient(135deg, rgba(20, 80, 95, 0.75), rgba(10, 45, 58, 0.85));
+    border: 1px solid rgba(56, 200, 220, 0.30);
+    color: #e0f8fa;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 20px rgba(0, 160, 185, 0.18), inset 0 1px 0 rgba(255,255,255,0.08);
+    border-radius: 20px;
+    transition: all 0.2s ease;
+}
+
+[data-app-theme="seaside"] .end-session-btn:hover {
+    background: linear-gradient(135deg, rgba(30, 110, 130, 0.90), rgba(15, 65, 82, 0.95));
+    border-color: rgba(100, 220, 235, 0.55);
+    box-shadow: 0 6px 28px rgba(0, 180, 210, 0.28), inset 0 1px 0 rgba(255,255,255,0.12);
+    transform: translateY(-1px);
+}
+
+[data-app-theme="seaside"] .creator {
+    color: rgba(100, 210, 225, 0.55);
+    font-style: italic;
+    letter-spacing: 0.5px;
+}
+
+/* ── Mute toggle ── */
+[data-app-theme="seaside"] .mute-toggle {
+    background: rgba(6, 24, 30, 0.60);
+    border: 1px solid rgba(56, 200, 220, 0.22);
+    color: #4aa8ba;
+    box-shadow: 0 2px 12px rgba(0, 160, 185, 0.12), inset 0 1px 0 rgba(255,255,255,0.05);
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+[data-app-theme="seaside"] .mute-toggle:hover { color: #fff; border-color: rgba(100,220,235,0.5); transform: scale(1.08); }
+[data-app-theme="seaside"] .mute-toggle.muted { color: rgba(200, 225, 230, 0.35); }
+
+/* ── Clock enclosure — frosted glass card ── */
+[data-app-theme="seaside"] .clock-enclosure {
+    background: rgba(5, 18, 24, 0.48);
+    border: 1px solid rgba(56, 200, 220, 0.16);
+    border-radius: 20px;
+    box-shadow:
+        0 8px 40px rgba(0, 12, 18, 0.55),
+        0 1px 0 rgba(56, 200, 220, 0.10) inset,
+        0 0 0 1px rgba(255,255,255,0.03) inset;
+    backdrop-filter: blur(24px) saturate(1.5);
+    -webkit-backdrop-filter: blur(24px) saturate(1.5);
+}
+
+[data-app-theme="seaside"] .clock-top-bar {
+    background: transparent;
+    border-bottom: 1px solid rgba(56, 200, 220, 0.10);
+}
+
+[data-app-theme="seaside"] .clock-label {
+    color: #4aa8ba;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0.85;
+}
+
+[data-app-theme="seaside"] .clock-display {
+    background: rgba(2, 8, 12, 0.70);
+    border: 1px solid rgba(56, 200, 220, 0.10);
+    border-radius: 10px;
+    box-shadow: inset 0 4px 20px rgba(0, 5, 10, 0.80), inset 0 0 0 1px rgba(56,200,220,0.04);
+}
+
+[data-app-theme="seaside"] .flip-digit {
+    color: #e8fafc;
+    background: rgba(4, 16, 22, 0.75);
+    border: 1px solid rgba(56, 200, 220, 0.12);
+    border-radius: 6px;
+    font-weight: 700;
+    box-shadow: inset 0 2px 10px rgba(0, 5, 10, 0.6), 0 1px 0 rgba(56,200,220,0.08);
+    text-shadow: 0 0 24px rgba(56, 200, 220, 0.50), 0 0 8px rgba(56,200,220,0.30);
+}
+
+[data-app-theme="seaside"] .flip-colon {
+    color: #4aa8ba;
+    text-shadow: 0 0 12px rgba(56, 200, 220, 0.60);
+    font-weight: 700;
+}
+
+[data-app-theme="seaside"] .clock-bottom-bar {
+    background: transparent;
+    border-top: 1px solid rgba(56, 200, 220, 0.10);
+}
+
+[data-app-theme="seaside"] .breaks-count {
+    color: rgba(56, 200, 220, 0.50);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+}
+
+/* ── Control buttons ── */
+[data-app-theme="seaside"] .control-btn {
+    background: rgba(5, 18, 24, 0.55);
+    border: 1px solid rgba(56, 200, 220, 0.20);
+    color: #4aa8ba;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 12, 18, 0.45), inset 0 1px 0 rgba(255,255,255,0.06);
+    transition: all 0.18s ease;
+}
+
+[data-app-theme="seaside"] .control-btn:hover:not(:disabled) {
+    background: linear-gradient(145deg, rgba(20, 80, 96, 0.80), rgba(8, 45, 58, 0.88));
+    border-color: rgba(56, 200, 220, 0.45);
+    color: #fff;
+    box-shadow: 0 6px 28px rgba(0, 180, 210, 0.25), inset 0 1px 0 rgba(255,255,255,0.10);
+    transform: translateY(-1px);
+}
+
+[data-app-theme="seaside"] .control-btn:disabled {
+    background: rgba(4, 14, 18, 0.35);
+    border-color: rgba(56, 200, 220, 0.07);
+    color: rgba(56, 200, 220, 0.20);
+    box-shadow: none;
+}
+
+[data-app-theme="seaside"] #checkBtn {
+    background: linear-gradient(135deg, rgba(15, 70, 85, 0.70), rgba(8, 45, 58, 0.80)) !important;
+    border: 1px solid rgba(56, 200, 220, 0.35) !important;
+    color: #4aa8ba !important;
+}
+
+[data-app-theme="seaside"] #checkBtn:not(:disabled):hover {
+    background: linear-gradient(135deg, rgba(25, 100, 118, 0.88), rgba(15, 65, 82, 0.95)) !important;
+    border-color: rgba(100, 230, 242, 0.60) !important;
+    color: #fff !important;
+    box-shadow: 0 6px 24px rgba(0, 190, 220, 0.28) !important;
+}
+
+/* ── Task section panel ── */
+[data-app-theme="seaside"] .task-section {
+    background: rgba(5, 18, 24, 0.48) !important;
+    border: 1px solid rgba(56, 200, 220, 0.14) !important;
+    border-radius: 18px;
+    box-shadow: 0 8px 40px rgba(0, 12, 18, 0.50), inset 0 1px 0 rgba(56,200,220,0.06) !important;
+    backdrop-filter: blur(24px) saturate(1.4) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(1.4) !important;
+}
+
+[data-app-theme="seaside"] .task-header span {
+    color: #4aa8ba;
+    font-weight: 700;
+    letter-spacing: 3px;
+    font-size: 10px;
+}
+
+[data-app-theme="seaside"] .add-task-btn {
+    background: linear-gradient(135deg, rgba(20, 80, 96, 0.70), rgba(8, 45, 58, 0.80));
+    border: 1px solid rgba(56, 200, 220, 0.30);
+    color: #4aa8ba;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 160, 185, 0.15), inset 0 1px 0 rgba(255,255,255,0.06);
+    font-weight: 700;
+    font-size: 16px;
+    transition: all 0.18s ease;
+}
+
+[data-app-theme="seaside"] .add-task-btn:hover {
+    background: linear-gradient(135deg, rgba(30, 110, 130, 0.88), rgba(15, 65, 82, 0.95));
+    border-color: rgba(100, 220, 235, 0.55);
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 4px 20px rgba(0, 180, 210, 0.25);
+}
+
+/* ── Tabs ── */
+[data-app-theme="seaside"] .task-tabs {
+    border-bottom: 1px solid rgba(56, 200, 220, 0.12) !important;
+}
+
+[data-app-theme="seaside"] .tab {
+    color: rgba(56, 200, 220, 0.40) !important;
+    border-bottom: 2px solid transparent !important;
+    background: transparent !important;
+    font-weight: 600 !important;
+    letter-spacing: 1px;
+    font-size: 10px;
+    text-transform: lowercase;
+    transition: all 0.18s ease;
+}
+
+[data-app-theme="seaside"] .tab.active {
+    color: #e8f8fa !important;
+    border-bottom: 2px solid #4aa8ba !important;
+    background: transparent !important;
+    text-shadow: 0 0 12px rgba(56, 200, 220, 0.40);
+}
+
+[data-app-theme="seaside"] .tab:hover:not(.active) {
+    color: #4aa8ba !important;
+    background: rgba(56, 200, 220, 0.06) !important;
+    border-radius: 6px 6px 0 0;
+}
+
+/* ── Task items ── */
+[data-app-theme="seaside"] .task-item {
+    background: rgba(6, 22, 28, 0.45) !important;
+    border: 1px solid rgba(56, 200, 220, 0.10) !important;
+    color: #c8eef4 !important;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0, 10, 16, 0.30);
+    transition: all 0.18s ease;
+}
+
+[data-app-theme="seaside"] .task-item:hover {
+    background: rgba(10, 35, 44, 0.62) !important;
+    border-color: rgba(56, 200, 220, 0.24) !important;
+    box-shadow: 0 4px 20px rgba(0, 160, 185, 0.14) !important;
+    transform: translateX(2px);
+}
+
+[data-app-theme="seaside"] .task-item.active-task {
+    background: rgba(12, 55, 68, 0.72) !important;
+    border-color: rgba(56, 200, 220, 0.38) !important;
+    box-shadow: 0 4px 20px rgba(0, 180, 210, 0.18), inset 0 0 0 1px rgba(56,200,220,0.08) !important;
+}
+
+[data-app-theme="seaside"] .view-receipt-btn {
+    background: rgba(6, 22, 28, 0.65);
+    border: 1px solid rgba(56, 200, 220, 0.20);
+    color: #4aa8ba;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    transition: all 0.18s ease;
+}
+
+[data-app-theme="seaside"] .view-receipt-btn:hover {
+    background: rgba(20, 80, 96, 0.80);
+    border-color: rgba(100, 220, 235, 0.45);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(0, 180, 210, 0.20);
+}
+
+[data-app-theme="seaside"] .no-tasks {
+    color: rgba(56, 200, 220, 0.30);
+    font-style: italic;
+    letter-spacing: 0.5px;
+}
+
+/* ── Task input ── */
+[data-app-theme="seaside"] .task-input-container {
+    background: rgba(4, 16, 20, 0.60);
+    border: 1px solid rgba(56, 200, 220, 0.18);
+    border-radius: 10px;
+}
+
+[data-app-theme="seaside"] #taskInput {
+    background: transparent;
+    color: #e8f8fa;
+    border: none;
+    font-size: 11px;
+    letter-spacing: 0.3px;
+}
+
+[data-app-theme="seaside"] #taskInput::placeholder {
+    color: rgba(56, 200, 220, 0.28);
+    font-style: italic;
+}
+
+[data-app-theme="seaside"] .add-btn {
+    background: linear-gradient(135deg, rgba(20, 80, 96, 0.80), rgba(8, 50, 64, 0.88));
+    border: 1px solid rgba(56, 200, 220, 0.30);
+    color: #4aa8ba;
+    border-radius: 8px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    transition: all 0.18s ease;
+}
+
+[data-app-theme="seaside"] .add-btn:hover {
+    background: linear-gradient(135deg, rgba(30, 110, 130, 0.90), rgba(15, 70, 88, 0.95));
+    color: #fff;
+    border-color: rgba(100, 220, 235, 0.50);
+    box-shadow: 0 4px 16px rgba(0, 180, 210, 0.22);
+}
+
+/* ── Session summary button ── */
+[data-app-theme="seaside"] .session-summary-btn {
+    background: linear-gradient(135deg, rgba(15, 60, 75, 0.75), rgba(6, 30, 42, 0.85));
+    border: 1px solid rgba(56, 200, 220, 0.28);
+    color: #e0f8fa;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border-radius: 24px;
+    box-shadow: 0 6px 28px rgba(0, 150, 180, 0.20), inset 0 1px 0 rgba(255,255,255,0.07);
+    transition: all 0.20s ease;
+}
+
+[data-app-theme="seaside"] .session-summary-btn:hover {
+    background: linear-gradient(135deg, rgba(25, 95, 115, 0.90), rgba(12, 55, 72, 0.95));
+    border-color: rgba(100, 220, 235, 0.50);
+    color: #fff;
+    box-shadow: 0 8px 36px rgba(0, 180, 215, 0.30), inset 0 1px 0 rgba(255,255,255,0.10);
+    transform: translateY(-1px);
+}
+
+/* ── Tray & camera filters ── */
+[data-app-theme="seaside"] .tray-image {
+    filter: brightness(0.88) hue-rotate(162deg) saturate(0.78) contrast(1.04);
+}
+
+[data-app-theme="seaside"] .camera-image {
+    filter: brightness(0.82) hue-rotate(172deg) saturate(0.65) contrast(1.06);
+}
+
+[data-app-theme="seaside"] .scene {
+    filter: drop-shadow(0 0 50px rgba(0, 140, 170, 0.22));
+}
+
+/* ── Settings button ── */
+[data-app-theme="seaside"] .settings-btn {
+    background: rgba(5, 18, 24, 0.65);
+    border: 1px solid rgba(56, 200, 220, 0.24);
+    color: #4aa8ba;
+    border-radius: 50%;
+    box-shadow: 0 4px 20px rgba(0, 140, 170, 0.18), inset 0 1px 0 rgba(255,255,255,0.05);
+    transition: all 0.20s ease;
+}
+
+[data-app-theme="seaside"] .settings-btn:hover {
+    background: rgba(15, 55, 70, 0.82);
+    border-color: rgba(100, 220, 235, 0.45);
+    color: #fff;
+    box-shadow: 0 6px 28px rgba(0, 180, 215, 0.25);
+}
+
+/* ── Settings panel ── */
+[data-app-theme="seaside"] .settings-panel {
+    background: rgba(4, 16, 22, 0.90);
+    border: 1px solid rgba(56, 200, 220, 0.18);
+    border-radius: 18px;
+    box-shadow: 0 16px 50px rgba(0, 10, 18, 0.85), inset 0 1px 0 rgba(56,200,220,0.06);
+    backdrop-filter: blur(28px) saturate(1.6);
+    -webkit-backdrop-filter: blur(28px) saturate(1.6);
+}
+
+[data-app-theme="seaside"] .settings-panel-title {
+    color: #4aa8ba;
+    font-weight: 700;
+    letter-spacing: 3px;
+    font-size: 9px;
+    border-bottom: 1px solid rgba(56, 200, 220, 0.12);
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+}
+
+[data-app-theme="seaside"] .settings-section-label {
+    color: rgba(56, 200, 220, 0.45);
+    letter-spacing: 2px;
+    font-size: 8px;
+    font-weight: 700;
+}
+
+[data-app-theme="seaside"] .app-theme-btn {
+    background: rgba(6, 22, 28, 0.70);
+    border: 1px solid rgba(56, 200, 220, 0.16);
+    color: rgba(200, 238, 244, 0.80);
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.18s ease;
+}
+
+[data-app-theme="seaside"] .app-theme-btn:hover {
+    background: rgba(15, 55, 70, 0.82);
+    border-color: rgba(56, 200, 220, 0.35);
+    color: #fff;
+}
+
+[data-app-theme="seaside"] .app-theme-btn.active {
+    background: linear-gradient(135deg, rgba(20, 80, 96, 0.85), rgba(8, 50, 64, 0.90));
+    border-color: rgba(56, 200, 220, 0.50);
+    color: #fff;
+    box-shadow: 0 2px 14px rgba(0, 180, 210, 0.18), inset 0 1px 0 rgba(255,255,255,0.07);
+}
+
+/* ── Modal (camera open) ── */
+[data-app-theme="seaside"] .modal-overlay {
+    background: rgba(0, 6, 10, 0.75) !important;
+}
+
+[data-app-theme="seaside"] .modal {
+    background: rgba(3, 14, 20, 0.97) !important;
+    border: 1px solid rgba(56, 200, 220, 0.18) !important;
+    border-radius: 20px;
+    box-shadow: 0 24px 70px rgba(0, 10, 18, 0.95), inset 0 1px 0 rgba(56,200,220,0.06) !important;
+    backdrop-filter: blur(30px) !important;
+    -webkit-backdrop-filter: blur(30px) !important;
+}
+
+[data-app-theme="seaside"] .modal-close {
+    color: #4aa8ba;
+    border: 1px solid rgba(56, 200, 220, 0.20);
+    background: rgba(6, 22, 28, 0.70);
+    border-radius: 50%;
+    font-size: 18px;
+    transition: all 0.18s ease;
+}
+
+[data-app-theme="seaside"] .modal-close:hover {
+    color: #fff;
+    border-color: rgba(100, 220, 235, 0.45);
+    background: rgba(20, 70, 86, 0.85);
+    transform: rotate(90deg) scale(1.1);
+}
+
+[data-app-theme="seaside"] .theme-label,
+[data-app-theme="seaside"] .tool-label {
+    color: rgba(56, 200, 220, 0.65) !important;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    font-size: 9px;
+}
+
+[data-app-theme="seaside"] .theme-btn,
+[data-app-theme="seaside"] .dither-btn,
+[data-app-theme="seaside"] .mode-btn {
+    background: rgba(6, 22, 28, 0.80) !important;
+    border: 1px solid rgba(56, 200, 220, 0.18) !important;
+    color: #c8eef4 !important;
+    border-radius: 8px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    transition: all 0.15s ease;
+}
+
+[data-app-theme="seaside"] .theme-btn.active,
+[data-app-theme="seaside"] .dither-btn.active,
+[data-app-theme="seaside"] .mode-btn.active {
+    background: linear-gradient(135deg, rgba(20, 85, 102, 0.92), rgba(8, 52, 66, 0.96)) !important;
+    border-color: rgba(56, 200, 220, 0.50) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 14px rgba(0, 180, 215, 0.22) !important;
+}
+
+[data-app-theme="seaside"] .theme-btn:hover,
+[data-app-theme="seaside"] .dither-btn:hover,
+[data-app-theme="seaside"] .mode-btn:hover {
+    border-color: rgba(56, 200, 220, 0.35) !important;
+    color: #fff !important;
+    background: rgba(15, 55, 70, 0.85) !important;
+}
+
+[data-app-theme="seaside"] .signoff-btn {
+    background: linear-gradient(135deg, rgba(20, 85, 102, 0.88), rgba(8, 52, 66, 0.95)) !important;
+    border: 1px solid rgba(56, 200, 220, 0.38) !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 180, 215, 0.22), inset 0 1px 0 rgba(255,255,255,0.08) !important;
+    transition: all 0.18s ease;
+}
+
+[data-app-theme="seaside"] .signoff-btn:hover {
+    background: linear-gradient(135deg, rgba(30, 115, 138, 0.95), rgba(14, 72, 90, 0.98)) !important;
+    border-color: rgba(100, 228, 242, 0.55) !important;
+    box-shadow: 0 6px 28px rgba(0, 200, 230, 0.30), inset 0 1px 0 rgba(255,255,255,0.12) !important;
+    transform: translateY(-1px);
+}
+
+[data-app-theme="seaside"] .low-ink-label {
+    color: rgba(56, 200, 220, 0.65) !important;
+    font-weight: 600;
+}
+
+[data-app-theme="seaside"] .capture-btn {
+    border: 3px solid rgba(56, 200, 220, 0.50) !important;
+    box-shadow: 0 0 20px rgba(0, 200, 230, 0.22), inset 0 0 12px rgba(0, 150, 180, 0.15) !important;
+}
+
+[data-app-theme="seaside"] .shutter-inner {
+    background: rgba(56, 200, 220, 0.80) !important;
+}
+
+/* ── Camera screen ── */
+[data-app-theme="seaside"] .camera-screen {
+    border-color: rgba(56, 200, 220, 0.16) !important;
+    box-shadow: inset 0 0 24px rgba(0, 10, 18, 0.85) !important;
+}
+
+/* ── REC indicator ── */
+[data-app-theme="seaside"] .rec-dot {
+    background: #4aa8ba !important;
+    box-shadow: 0 0 8px rgba(56, 200, 220, 0.80) !important;
+}
+/* ═══════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════════
+OCEAN TIDE — No-Border Transparent Refinement
+Removes borders from buttons, increases panel transparency.
+Left panel (clock, controls, task list) becomes more see-through.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Logo: borderless ── */
+[data-app-theme="seaside"] .logo {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+/* ── End session: borderless pill ── */
+[data-app-theme="seaside"] .end-session-btn {
+    border: none !important;
+    background: rgba(20, 80, 96, 0.40) !important;
+    box-shadow: none !important;
+}
+[data-app-theme="seaside"] .end-session-btn:hover {
+    border: none !important;
+    background: rgba(30, 110, 130, 0.58) !important;
+    box-shadow: none !important;
+}
+
+/* ── Mute toggle: borderless ── */
+[data-app-theme="seaside"] .mute-toggle {
+    border: none !important;
+    background: rgba(6, 24, 30, 0.35) !important;
+    box-shadow: none !important;
+}
+
+/* ── Clock enclosure: more transparent, no border ── */
+[data-app-theme="seaside"] .clock-enclosure {
+    border: none !important;
+    background: rgba(5, 18, 24, 0.28) !important;
+    box-shadow: none !important;
+}
+[data-app-theme="seaside"] .clock-top-bar {
+    border-bottom: none !important;
+}
+[data-app-theme="seaside"] .clock-bottom-bar {
+    border-top: none !important;
+}
+[data-app-theme="seaside"] .clock-display {
+    border: none !important;
+    background: rgba(2, 8, 12, 0.45) !important;
+    box-shadow: none !important;
+}
+[data-app-theme="seaside"] .flip-digit {
+    border: none !important;
+    background: rgba(4, 16, 22, 0.45) !important;
+    box-shadow: none !important;
+}
+
+/* ── Control buttons: borderless, very transparent ── */
+[data-app-theme="seaside"] .control-btn {
+    border: none !important;
+    background: rgba(5, 18, 24, 0.32) !important;
+    box-shadow: none !important;
+}
+[data-app-theme="seaside"] .control-btn:hover:not(:disabled) {
+    border: none !important;
+    background: rgba(20, 80, 96, 0.55) !important;
+    box-shadow: none !important;
+}
+[data-app-theme="seaside"] .control-btn:disabled {
+    border: none !important;
+    background: rgba(4, 14, 18, 0.20) !important;
+    box-shadow: none !important;
+}
+[data-app-theme="seaside"] #checkBtn {
+    border: none !important;
+    background: rgba(15, 70, 85, 0.38) !important;
+    box-shadow: none !important;
+}
+[data-app-theme="seaside"] #checkBtn:not(:disabled):hover {
+    border: none !important;
+    background: rgba(25, 100, 118, 0.55) !important;
+    box-shadow: none !important;
+}
+
+/* ── Task section: more transparent, no border ── */
+[data-app-theme="seaside"] .task-section {
+    border: none !important;
+    background: rgba(5, 18, 24, 0.28) !important;
+    box-shadow: none !important;
+}
+
+/* ── Add task (+) button: borderless ── */
+[data-app-theme="seaside"] .add-task-btn {
+    border: none !important;
+    background: rgba(20, 80, 96, 0.38) !important;
+    box-shadow: none !important;
+}
+[data-app-theme="seaside"] .add-task-btn:hover {
+    border: none !important;
+    background: rgba(30, 110, 130, 0.55) !important;
+    box-shadow: none !important;
+}
+
+/* ── Tabs: no border on container ── */
+[data-app-theme="seaside"] .task-tabs {
+    border-bottom: 1px solid rgba(56, 200, 220, 0.08) !important;
+}
+
+/* ── Task items: borderless, ultra-transparent ── */
+[data-app-theme="seaside"] .task-item {
+    border: none !important;
+    background: rgba(6, 22, 28, 0.28) !important;
+    box-shadow: none !important;
+}
+[data-app-theme="seaside"] .task-item:hover {
+    border: none !important;
+    background: rgba(10, 40, 52, 0.45) !important;
+    box-shadow: none !important;
+}
+[data-app-theme="seaside"] .task-item.active-task {
+    border: none !important;
+    background: rgba(12, 55, 68, 0.50) !important;
+    box-shadow: none !important;
+    border-left: 2px solid rgba(56, 200, 220, 0.50) !important;
+}
+
+/* ── View receipt button: borderless ── */
+[data-app-theme="seaside"] .view-receipt-btn {
+    border: none !important;
+    background: rgba(6, 22, 28, 0.40) !important;
+    box-shadow: none !important;
+}
+[data-app-theme="seaside"] .view-receipt-btn:hover {
+    border: none !important;
+    background: rgba(20, 80, 96, 0.55) !important;
+    box-shadow: none !important;
+}
+
+/* ── Task input: borderless ── */
+[data-app-theme="seaside"] .task-input-container {
+    border: none !important;
+    border-bottom: 1px solid rgba(56, 200, 220, 0.12) !important;
+    background: rgba(4, 16, 20, 0.35) !important;
+    border-radius: 0 !important;
+}
+[data-app-theme="seaside"] .add-btn {
+    border: none !important;
+    background: rgba(20, 80, 96, 0.50) !important;
+    box-shadow: none !important;
+}
+[data-app-theme="seaside"] .add-btn:hover {
+    border: none !important;
+    background: rgba(30, 110, 130, 0.65) !important;
+}
+
+/* ── Session summary button: borderless ── */
+[data-app-theme="seaside"] .session-summary-btn {
+    border: none !important;
+    background: rgba(15, 60, 75, 0.45) !important;
+    box-shadow: none !important;
+}
+[data-app-theme="seaside"] .session-summary-btn:hover {
+    border: none !important;
+    background: rgba(25, 95, 115, 0.62) !important;
+    box-shadow: none !important;
+}
+
+/* ── Settings button: borderless ── */
+[data-app-theme="seaside"] .settings-btn {
+    border: none !important;
+    background: rgba(5, 18, 24, 0.45) !important;
+    box-shadow: none !important;
+}
+[data-app-theme="seaside"] .settings-btn:hover {
+    border: none !important;
+    background: rgba(15, 55, 70, 0.62) !important;
+    box-shadow: none !important;
+}
+
+/* ── Settings panel: borderless ── */
+[data-app-theme="seaside"] .settings-panel {
+    border: none !important;
+    box-shadow: 0 16px 50px rgba(0, 10, 18, 0.70) !important;
+}
+[data-app-theme="seaside"] .app-theme-btn {
+    border: none !important;
+    background: rgba(6, 22, 28, 0.45) !important;
+}
+[data-app-theme="seaside"] .app-theme-btn:hover {
+    border: none !important;
+    background: rgba(15, 55, 70, 0.60) !important;
+}
+[data-app-theme="seaside"] .app-theme-btn.active {
+    border: none !important;
+    border-left: 2px solid #4aa8ba !important;
+    background: rgba(20, 80, 96, 0.55) !important;
+    box-shadow: none !important;
+}
+
+/* ── Header: full-bleed — keep cyan border ── */
+[data-app-theme="seaside"] header {
+    border-bottom: 1px solid rgba(56, 200, 220, 0.15) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════ */

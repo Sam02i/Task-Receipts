@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipts Archive - Task Receipts</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #ececea;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: #e4e4e0;
+            border-bottom: 1px solid #d8d8d4;
+        }
+
+        .top-bar-center { font-size: 13px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #555; }
+
+        .pill-btn {
+            padding: 8px 18px;
+            border: 1.5px solid #c8c8c4;
+            background: #f0f0ec;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            color: #555;
+            transition: all 0.2s;
+            text-decoration: none;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.06), -2px -2px 5px rgba(255,255,255,0.7);
+        }
+        .pill-btn:hover { background: #fff; border-color: #aaa; }
+
+        .archive-content {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 24px;
+        }
+
+        .archive-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .archive-title {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+        }
+
+        .archive-count {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .receipts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .archive-receipt {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .archive-receipt:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .receipt-header { text-align: center; border-bottom: 2px dashed currentColor; padding-bottom: 5px; margin-bottom: 6px; }
+        .receipt-title { font-size: 9px; font-weight: 700; letter-spacing: 1px; }
+        .receipt-task { font-size: 8px; margin-top: 2px; opacity: 0.8; }
+        .receipt-date { font-size: 7px; opacity: 0.6; }
+        .receipt-image { width: 100%; height: 100px; margin: 6px 0; overflow: hidden; border: 1px solid rgba(0,0,0,0.1); }
+        .receipt-image img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
+        .receipt-stats { font-size: 7px; text-align: left; margin: 5px 0; padding: 3px; background: rgba(0,0,0,0.04); border-radius: 2px; line-height: 1.5; }
+        .receipt-footer { font-size: 7px; text-align: right; border-top: 1px dashed currentColor; padding-top: 3px; }
+
+        .receipt.theme-white { background: #fff; color: #333; }
+        .receipt.theme-cream { background: #fdf6e3; color: #5d4037; }
+        .receipt.theme-cream .receipt-stats { background: rgba(93,64,55,0.08); }
+        .receipt.theme-red { background: #c0392b; color: #fff; }
+        .receipt.theme-red .receipt-stats { background: rgba(0,0,0,0.2); }
+        .receipt.theme-blue { background: #2980b9; color: #fff; }
+        .receipt.theme-blue .receipt-stats { background: rgba(0,0,0,0.2); }
+        .receipt.theme-green { background: #27ae60; color: #fff; }
+        .receipt.theme-green .receipt-stats { background: rgba(0,0,0,0.2); }
+        .receipt.theme-pink { background: #e91e8c; color: #fff; }
+        .receipt.theme-pink .receipt-stats { background: rgba(0,0,0,0.2); }
+
+        .no-receipts {
+            text-align: center;
+            padding: 60px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        #appWallpaper {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background-size: cover; background-position: center center; background-repeat: no-repeat;
+            opacity: 0;
+        }
+        #appWallpaperOverlay {
+            position: fixed; inset: 0; z-index: 1; pointer-events: none; background: transparent;
+        }
+        body[data-app-theme="seaside"] #appWallpaperOverlay {
+            background: linear-gradient(to right, rgba(4,16,22,0.50) 0%, rgba(4,16,22,0.18) 50%, rgba(4,16,22,0.0) 100%);
+        }
+        body[data-app-theme="seaside"] { background-color: #040e14; color: #e8f8fa; }
+        .top-bar, .archive-content { position: relative; z-index: 2; }
+
+        /* ── Ocean Tide: Archive ── */
+        body[data-app-theme="seaside"] .top-bar {
+            background: rgba(4, 16, 22, 0.55);
+            border-bottom: 1px solid rgba(56, 200, 220, 0.14);
+            backdrop-filter: blur(22px) saturate(1.4);
+            -webkit-backdrop-filter: blur(22px) saturate(1.4);
+        }
+        body[data-app-theme="seaside"] .top-bar-center {
+            color: #38c8dc;
+            font-weight: 700;
+            letter-spacing: 3px;
+        }
+        body[data-app-theme="seaside"] .pill-btn {
+            background: rgba(5, 18, 24, 0.65);
+            border: 1px solid rgba(56, 200, 220, 0.24);
+            color: #c8eef4;
+            font-weight: 600;
+            box-shadow: 0 2px 14px rgba(0,140,170,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+            transition: all 0.18s ease;
+        }
+        body[data-app-theme="seaside"] .pill-btn:hover {
+            background: linear-gradient(135deg, rgba(20,80,96,0.82), rgba(8,48,62,0.90));
+            border-color: rgba(100, 220, 235, 0.48);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(0,180,210,0.22);
+            transform: translateY(-1px);
+        }
+        body[data-app-theme="seaside"] .archive-title {
+            color: #e8f8fa;
+            font-weight: 700;
+            letter-spacing: 3px;
+        }
+        body[data-app-theme="seaside"] .archive-count {
+            color: #38c8dc;
+            font-weight: 600;
+        }
+        /* archive receipt cards intentionally NOT themed — receipts keep original colours */
+    </style>
+</head>
+<body>
+    <div id="appWallpaper"></div>
+    <div id="appWallpaperOverlay"></div>
+    <script>
+        (function() {
+            var theme = localStorage.getItem('tr_app_theme') || 'classic';
+            document.body.setAttribute('data-app-theme', theme);
+            if (theme === 'seaside') {
+                var el = document.getElementById('appWallpaper');
+                if (el) { el.style.backgroundImage = "url('wallpaper.jpg')"; el.style.opacity = '1'; }
+            }
+        })();
+    </script>
+    <div class="top-bar">
+        <a href="index1.html" class="pill-btn">← Back to app</a>
+        <div class="top-bar-center">RECEIPTS ARCHIVE</div>
+        <a href="session-summary.html" class="pill-btn">Session summary →</a>
+    </div>
+
+    <div class="archive-content">
+        <div class="archive-header">
+            <div class="archive-title">ALL RECEIPTS</div>
+            <div class="archive-count" id="archiveCount">0 receipts collected</div>
+        </div>
+
+        <div class="receipts-grid" id="receiptsGrid"></div>
+    </div>
+
+    <script>
+        function loadArchive() {
+            const tasks = JSON.parse(localStorage.getItem('tr_tasks') || '[]');
+            const completedTasks = tasks.filter(t => t.status === 'completed' && t.receiptImage);
+            
+            document.getElementById('archiveCount').textContent = `${completedTasks.length} receipts collected`;
+            
+            const grid = document.getElementById('receiptsGrid');
+            
+            if (completedTasks.length === 0) {
+                grid.innerHTML = '<div class="no-receipts">No receipts yet. Complete some tasks to see them here!</div>';
+                return;
+            }
+            
+            grid.innerHTML = completedTasks.reverse().map(task => {
+                const date = new Date(task.id);
+                const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                const m = Math.floor((task.duration || 0) / 60);
+                const s = (task.duration || 0) % 60;
+                
+                return `
+                    <div class="archive-receipt receipt ${task.receiptTheme || 'theme-white'}">
+                        <div class="receipt-header">
+                            <div class="receipt-title">TASK RECEIPT</div>
+                            <div class="receipt-task">${task.name}</div>
+                            <div class="receipt-date">${dateStr}, ${timeStr}</div>
+                        </div>
+                        <div class="receipt-image"><img src="${task.receiptImage}" alt="proof"></div>
+                        <div class="receipt-stats">
+                            ${task.receiptStyle === 'draw' ? 'DRAW PROOF' : 'CAMERA PROOF'}<br>
+                            ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')} FOCUS<br>
+                            START →
+                        </div>
+                        <div class="receipt-footer">
+                            100% ON TASK · PRINTED ✓
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', loadArchive);
+    </script>
+</body>
+</html>
